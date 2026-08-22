@@ -13,7 +13,7 @@ import {
 
 export const LoginPage: React.FC = () => {
   const { navigateTo, addToast } = useApp();
-  const [studentId, setStudentId] = useState<string>('25B91A4744@srkrec.ac.in');
+  const [studentId, setStudentId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export const LoginPage: React.FC = () => {
       navigateTo(user.role === 'admin' ? 'admin' : 'dashboard');
     } catch (error) {
       if (error instanceof ApiError) {
-        setErrorMessage(error.status === 401 ? 'Invalid email or password.' : `Login failed (${error.status || 'network'}): ${error.message}`);
+        setErrorMessage(error.status === 401 ? 'Invalid email or password. Create an account first if you are new here.' : `Login failed (${error.status || 'network'}): ${error.message}`);
       } else {
         setErrorMessage(error instanceof Error ? `Login failed: ${error.message}` : 'Login failed because the backend could not be reached.');
       }
