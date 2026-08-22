@@ -10,6 +10,7 @@ import { getCrowdMap, resolveCurrentLocation } from './controllers/locationContr
 import facilityRoutes from './routes/facilityRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import adminBookingRoutes from './routes/adminBookingRoutes.js';
+import { getDatabaseHealth } from './db/connection.js';
 
 const app = express();
 
@@ -36,6 +37,14 @@ const health = (_req, res) => {
 };
 app.get('/health', health);
 app.get('/api/health', health);
+app.get('/api/health/database', async (_req, res, next) => {
+  try {
+    const database = await getDatabaseHealth();
+    return res.status(database.connected && database.usersTable ? 200 : 503).json({ success: database.connected && database.usersTable, database });
+  } catch (error) {
+    return next(error);
+  }
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/facilities', facilityRoutes);
 app.use('/api/bookings', bookingRoutes);

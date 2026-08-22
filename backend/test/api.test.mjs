@@ -21,6 +21,10 @@ test('health and location APIs', async () => {
   const health = await fetch(`${baseUrl}/api/health`).then((response) => response.json());
   assert.deepEqual(health, { success: true, message: 'Campus Rush API is running' });
 
+  const databaseHealth = await fetch(`${baseUrl}/api/health/database`);
+  assert.equal(databaseHealth.status, 200);
+  assert.deepEqual((await databaseHealth.json()).database, { configured: true, connected: true, usersTable: true });
+
   const locations = await fetch(`${baseUrl}/api/locations`).then((response) => response.json());
   assert.equal(locations.data.length, 14);
 
