@@ -1,4 +1,4 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://campus-rush-6ur1.onrender.com/api' : 'http://localhost:5000/api')).replace(/\/$/, '');
 
 export interface ApiResponse<T> {
   data: T;
@@ -6,7 +6,7 @@ export interface ApiResponse<T> {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public kind: 'backend' | 'endpoint' | 'network' | 'cors' = 'backend') {
     super(message);
     this.name = 'ApiError';
   }
@@ -14,10 +14,15 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('campus-rush-token') : null;
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options?.headers },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options?.headers },
+    });
+  } catch {
+    throw new ApiError(0, `Backend unavailable or blocked by CORS. Check the API URL (${API_URL}) and backend CORS settings.`, 'network');
+  }
 
   if (!response.ok) {
     let message = `Campus Rush service returned ${response.status}`;
@@ -27,7 +32,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<ApiRespo
     } catch {
       // Keep the generic message when the server has no JSON error body.
     }
-    throw new ApiError(response.status, message);
+    const kind = response.status === 404 ? 'endpoint' : response.status >= 500 ? 'backend' : 'backend';
+    throw new ApiError(response.status, `${message}${kind === 'endpoint' ? ' Check the API endpoint path.' : ''}`, kind);
   }
 
   return response.json() as Promise<ApiResponse<T>>;

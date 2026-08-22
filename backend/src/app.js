@@ -14,7 +14,16 @@ import adminBookingRoutes from './routes/adminBookingRoutes.js';
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || (process.env.ALLOW_NETLIFY_SUBDOMAINS !== 'false' && /^https:\/\/[a-z0-9-]+\.netlify\.app$/i.test(origin))) return callback(null, true);
+    return callback(new Error('CORS origin is not allowed.'));
+  },
+}));
 app.use(express.json());
 app.use((req, res, next) => {
   const startedAt = Date.now();
