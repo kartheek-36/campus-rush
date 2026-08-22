@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F8F9FB] text-[#17181A] font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+}
+
+@layer utilities {
+  .ask-campus-heading {
+    font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .bg-slate-50 { background-color: #F8F9FB !important; }
+  .bg-slate-100 { background-color: #F3F4F6 !important; }
+  .bg-slate-200 { background-color: #E5E7EB !important; }
+  .text-slate-900 { color: #17181A !important; }
+  .text-slate-800 { color: #374151 !important; }
+  .text-slate-700 { color: #374151 !important; }
+  .text-slate-600 { color: #6B7280 !important; }
+  .text-slate-500 { color: #6B7280 !important; }
+  .text-slate-400 { color: #9CA3AF !important; }
+  .border-slate-200, .border-slate-200\/80, .border-slate-200\/90 { border-color: #E5E7EB !important; }
+  .border-slate-100 { border-color: #E5E7EB !important; }
+  .bg-indigo-50, .bg-indigo-50\/50, .bg-indigo-50\/80 { background-color: #EEF0FF !important; }
+  .bg-indigo-600 { background-color: #5B5CE2 !important; }
+  .text-indigo-600, .text-indigo-700 { color: #5B5CE2 !important; }
+  .text-indigo-950 { color: #34358F !important; }
+  .border-indigo-200, .border-indigo-300, .border-indigo-500\/30, .border-indigo-500\/40 { border-color: #D4D5FF !important; }
+  .hover\:bg-indigo-100:hover, .hover\:bg-indigo-50:hover { background-color: #EEF0FF !important; }
+  .hover\:bg-indigo-700:hover { background-color: #4F50D5 !important; }
+  .hover\:text-indigo-700:hover { color: #4F50D5 !important; }
+  .focus\:border-indigo-500:focus { border-color: #5B5CE2 !important; }
+  .focus\:ring-indigo-500\/20:focus { --tw-ring-color: rgba(91, 92, 226, 0.12) !important; }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
