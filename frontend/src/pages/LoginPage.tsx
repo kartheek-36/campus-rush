@@ -32,7 +32,11 @@ export const LoginPage: React.FC = () => {
       });
       navigateTo(user.role === 'admin' ? 'admin' : 'dashboard');
     } catch (error) {
-      setErrorMessage(error instanceof ApiError && error.status === 401 ? 'Invalid email or password.' : 'Unable to connect to Campus Rush services.');
+      if (error instanceof ApiError) {
+        setErrorMessage(error.status === 401 ? 'Invalid email or password.' : `Login failed (${error.status || 'network'}): ${error.message}`);
+      } else {
+        setErrorMessage(error instanceof Error ? `Login failed: ${error.message}` : 'Login failed because the backend could not be reached.');
+      }
     } finally {
       setIsLoading(false);
     }

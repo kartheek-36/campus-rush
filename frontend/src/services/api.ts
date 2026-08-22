@@ -1,4 +1,4 @@
-const API_ORIGIN = (import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://campus-rush-6ur1.onrender.com' : 'http://localhost:5000')).replace(/\/$/, '').replace(/\/api$/, '');
+const API_ORIGIN = (import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://campus-rush-6ur1.onrender.com' : '')).replace(/\/$/, '').replace(/\/api$/, '');
 const API_URL = `${API_ORIGIN}/api`;
 
 export interface ApiResponse<T> {
