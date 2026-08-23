@@ -1,6 +1,17 @@
 const API_ORIGIN = (import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://campus-rush-6ur1.onrender.com' : '')).replace(/\/$/, '').replace(/\/api$/, '');
 const API_URL = `${API_ORIGIN}/api`;
 
+const redactResponse = (body: unknown) => {
+  if (!body || typeof body !== 'object') return body;
+  const redacted = { ...(body as Record<string, unknown>) };
+  if ('token' in redacted) redacted.token = '[redacted]';
+  if (redacted.data && typeof redacted.data === 'object') {
+    redacted.data = { ...(redacted.data as Record<string, unknown>) };
+    if ('token' in (redacted.data as Record<string, unknown>)) (redacted.data as Record<string, unknown>).token = '[redacted]';
+  }
+  return redacted;
+};
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;
@@ -15,9 +26,10 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('campus-rush-token') : null;
+  const requestUrl = `${API_URL}${path}`;
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await fetch(requestUrl, {
       ...options,
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options?.headers },
     });
@@ -25,19 +37,17 @@ async function request<T>(path: string, options?: RequestInit): Promise<ApiRespo
     throw new ApiError(0, `Backend unavailable or blocked by CORS. Check the API URL (${API_URL}) and backend CORS settings.`, 'network');
   }
 
+  const responseBody = await response.json().catch(() => null) as ApiResponse<T> | { message?: string } | null;
+  console.info('Campus Rush API', { url: requestUrl, method: options?.method || 'GET', status: response.status, response: redactResponse(responseBody) });
+
   if (!response.ok) {
     let message = `Campus Rush service returned ${response.status}`;
-    try {
-      const errorBody = await response.json() as { message?: string };
-      message = errorBody.message || message;
-    } catch {
-      // Keep the generic message when the server has no JSON error body.
-    }
+    message = (responseBody as { message?: string } | null)?.message || message;
     const kind = response.status === 404 ? 'endpoint' : response.status >= 500 ? 'backend' : 'backend';
     throw new ApiError(response.status, `${message}${kind === 'endpoint' ? ' Check the API endpoint path.' : ''}`, kind);
   }
 
-  return response.json() as Promise<ApiResponse<T>>;
+  return responseBody as ApiResponse<T>;
 }
 
 export const api = {
