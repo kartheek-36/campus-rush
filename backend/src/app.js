@@ -15,9 +15,11 @@ import { getDatabaseHealth } from './db/connection.js';
 const app = express();
 
 app.use(helmet());
+const productionFrontendOrigin = 'https://campus-rush-3td659t6c-kartheek-36s-projects.vercel.app';
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.FRONTEND_URLS,
+  productionFrontendOrigin,
   'http://localhost:3000',
   'http://localhost:5173',
 ].flatMap((value) => String(value || '').split(','))
@@ -26,9 +28,12 @@ const allowedOrigins = [
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`CORS origin blocked: ${origin}`);
     return callback(null, false);
   },
   credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
 };
 app.use((req, _res, next) => {
