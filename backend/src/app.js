@@ -15,20 +15,32 @@ import { getDatabaseHealth } from './db/connection.js';
 const app = express();
 
 app.use(helmet());
-const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:3000')
-  .split(',')
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URLS,
+  'http://localhost:3000',
+  'http://localhost:5173',
+].flatMap((value) => String(value || '').split(','))
   .map((origin) => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || (process.env.ALLOW_NETLIFY_SUBDOMAINS !== 'false' && /^https:\/\/[a-z0-9-]+\.netlify\.app$/i.test(origin))) return callback(null, true);
-    return callback(new Error('CORS origin is not allowed.'));
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
   },
-}));
+  credentials: false,
+  optionsSuccessStatus: 204,
+};
+app.use((req, _res, next) => {
+  console.log(`Incoming ${req.method} ${req.path} Origin: ${req.headers.origin || 'none'}`);
+  next();
+});
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use((req, res, next) => {
   const startedAt = Date.now();
-  res.on('finish', () => console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - startedAt}ms`));
+  res.on('finish', () => console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - startedAt}ms${req.path === '/api/auth/login' ? ' login' : ''}`));
   next();
 });
 
